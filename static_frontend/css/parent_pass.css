@@ -1,0 +1,214 @@
+/* ==========================================================================
+   CampusGate AI - Parent Visitor Gate Pass Styles & A5 Print Layout
+   ========================================================================== */
+
+/* Accent animations */
+@keyframes pulseGlow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+}
+.pulse-glow {
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* Badge colors */
+.badge-active-pass {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-exited-pass {
+    background-color: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Modal backdrop blur */
+.modal-overlay {
+    background-color: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(6px);
+}
+
+/* Auto-complete dropdown scrollbar */
+.student-search-dropdown::-webkit-scrollbar {
+    width: 5px;
+}
+.student-search-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 4px;
+}
+
+/* ==========================================================================
+   PRINT MEDIA STYLES - A5 BLACK & WHITE LAYOUT
+   ========================================================================== */
+@media print {
+    /* Define A5 Portrait Page Size */
+    @page {
+        size: A5 portrait;
+        margin: 6mm;
+    }
+
+    /* Force pure monochrome & hide all UI wrappers */
+    html, body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        font-size: 10pt !important;
+        line-height: 1.3 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Hide everything that is NOT the gate pass */
+    header,
+    nav,
+    footer,
+    #mainNav,
+    #passFormContainer,
+    #recordsListContainer,
+    #authModal,
+    .no-print,
+    button,
+    .btn,
+    .nav-tab,
+    .modal-overlay:not(#passModal) {
+        display: none !important;
+    }
+
+    /* Pass modal container reset for print */
+    #passModal {
+        position: static !important;
+        display: block !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        backdrop-filter: none !important;
+        z-index: 999999 !important;
+    }
+
+    #passModalDialog {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+    }
+
+    /* Printable Pass Container */
+    #printablePassReceipt {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8mm 6mm !important;
+        margin: 0 auto !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: 2px solid #000000 !important;
+        border-radius: 4px !important;
+    }
+
+    /* Header styling */
+    .print-header {
+        text-align: center !important;
+        border-bottom: 2px solid #000000 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .print-college-title {
+        font-size: 15pt !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        color: #000000 !important;
+        margin: 0 !important;
+    }
+
+    .print-pass-sub {
+        font-size: 10pt !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        border: 1px solid #000000 !important;
+        display: inline-block !important;
+        padding: 2px 12px !important;
+        margin-top: 5px !important;
+        background: #f0f0f0 !important;
+        color: #000000 !important;
+    }
+
+    /* Table grid for pass info */
+    .print-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 10px !important;
+        font-size: 9pt !important;
+    }
+
+    .print-table th,
+    .print-table td {
+        border: 1px solid #000000 !important;
+        padding: 4px 6px !important;
+        text-align: left !important;
+        color: #000000 !important;
+    }
+
+    .print-table th {
+        background-color: #f2f2f2 !important;
+        font-weight: 700 !important;
+        width: 25% !important;
+    }
+
+    /* QR Code and Photos */
+    .print-qr-container {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin: 10px 0 !important;
+        padding: 6px !important;
+        border: 1px solid #000000 !important;
+    }
+
+    .print-qr-code {
+        width: 90px !important;
+        height: 90px !important;
+    }
+
+    .print-qr-code img,
+    .print-qr-code canvas {
+        width: 90px !important;
+        height: 90px !important;
+        display: block !important;
+    }
+
+    /* Signatures layout */
+    .print-signatures {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 28px !important;
+        padding-top: 10px !important;
+    }
+
+    .print-sign-box {
+        width: 45% !important;
+        text-align: center !important;
+        border-top: 1px solid #000000 !important;
+        padding-top: 4px !important;
+        font-size: 8.5pt !important;
+        font-weight: 600 !important;
+    }
+
+    .print-footer-terms {
+        font-size: 7pt !important;
+        text-align: center !important;
+        margin-top: 8px !important;
+        color: #333333 !important;
+        border-top: 1px dashed #666666 !important;
+        padding-top: 4px !important;
+    }
+}

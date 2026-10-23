@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+venv/
+ENV/
+
+# Executables & Cloudflare tunnel binaries
+*.exe
+cloudflared.exe
+
+# Logs
+*.log
+static_tunnel.log
+tunnel.log
+
+# Local SQLite databases (to protect local attendance logs)
+data/*.db
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
