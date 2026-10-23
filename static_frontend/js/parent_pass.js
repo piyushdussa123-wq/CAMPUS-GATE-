@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initForm();
     initRecordsList();
     initTabSwitching();
+    initPrototypeButtons();
 });
 
 // Clock
@@ -501,5 +502,51 @@ function initTabSwitching() {
         cCreate.classList.add('hidden');
         cRecords.classList.remove('hidden');
         loadRecords();
+    });
+}
+
+// Prototype Showcase Quick-Fill & Demo Student Chips
+function initPrototypeButtons() {
+    const autoFillBtn = document.getElementById('autoFillDemoPassBtn');
+    if (autoFillBtn) {
+        autoFillBtn.addEventListener('click', () => {
+            document.getElementById('parentName').value = "Rajesh Sharma";
+            document.getElementById('phoneNumber').value = "9876543210";
+            document.getElementById('relation').value = "Father";
+            document.getElementById('purpose').value = "Meeting Faculty / HOD";
+            document.getElementById('idProofType').value = "Aadhaar Card";
+            document.getElementById('idProofNumber').value = "9876-5432-1098";
+            document.getElementById('vehicleNumber').value = "KA-01-AB-1234";
+
+            // Select prototype student Aarav Sharma
+            selectStudent(STATIC_STUDENTS[0]);
+
+            const now = new Date();
+            const dateInput = document.getElementById('visitDate');
+            if (dateInput) dateInput.value = now.toISOString().split('T')[0];
+            const inTimeInput = document.getElementById('inTime');
+            if (inTimeInput) inTimeInput.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            document.querySelectorAll('.form-error-msg').forEach(el => el.classList.add('hidden'));
+
+            const submitBtn = document.getElementById('submitPassBtn');
+            if (submitBtn) {
+                submitBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    document.querySelectorAll('.demo-student-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const id = parseInt(chip.getAttribute('data-id'), 10);
+            const found = STATIC_STUDENTS.find(s => s.id === id) || {
+                id: id,
+                name: chip.getAttribute('data-name'),
+                roll_number: chip.getAttribute('data-roll'),
+                department: chip.getAttribute('data-dept'),
+                year: '2nd Year'
+            };
+            selectStudent(found);
+        });
     });
 }

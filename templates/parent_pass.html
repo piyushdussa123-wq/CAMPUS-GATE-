@@ -112,7 +112,23 @@
                         </h2>
                         <p class="text-xs text-slate-400 mt-0.5">Issue an official entry gate permit linked to a registered student</p>
                     </div>
-                    <span class="text-xs text-slate-400 font-mono hidden sm:inline">All required fields marked with <span class="text-red-400">*</span></span>
+                <!-- Prototype / Demo Mode Showcase Banner -->
+                <div class="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/80 border border-indigo-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-white flex items-center">
+                                Prototype Demo Showcase
+                                <span class="ml-2 px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">Zero Setup Required</span>
+                            </h4>
+                            <p class="text-[11px] text-slate-400">Click below to auto-populate prototype student and visitor data without manual typing</p>
+                        </div>
+                    </div>
+                    <button type="button" id="autoFillDemoPassBtn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition flex items-center self-start sm:self-auto">
+                        <i class="fa-solid fa-bolt mr-2 text-amber-300"></i>1-Click Prototype Fill
+                    </button>
                 </div>
 
                 <form id="parentPassForm" class="space-y-6">
@@ -226,8 +242,22 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 mb-1.5">
                                     Search & Select Student <span class="text-red-400">*</span>
-                                    <span class="text-[10px] text-indigo-400 ml-1 font-normal">(Search by Roll No or Name)</span>
+                                    <span class="text-[10px] text-indigo-400 ml-1 font-normal">(Search or 1-Click Demo)</span>
                                 </label>
+
+                                <!-- 1-Click Prototype Student Chips -->
+                                <div class="flex flex-wrap items-center gap-1.5 mb-2">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Demo Pick:</span>
+                                    <button type="button" class="demo-student-chip px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600/30 text-slate-300 hover:text-white border border-slate-700 hover:border-indigo-500/50 text-[11px] font-medium transition" data-id="1" data-name="Aarav Sharma" data-roll="CS2026-012" data-dept="Computer Science & Engineering" data-year="3rd Year" data-photo="/data/student_photos/CS2026-012.jpg">
+                                        🎓 Aarav (CS)
+                                    </button>
+                                    <button type="button" class="demo-student-chip px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600/30 text-slate-300 hover:text-white border border-slate-700 hover:border-indigo-500/50 text-[11px] font-medium transition" data-id="2" data-name="Priya Patel" data-roll="EC2026-045" data-dept="Electronics & Communication" data-year="2nd Year" data-photo="/data/student_photos/EC2026-045.jpg">
+                                        🎓 Priya (EC)
+                                    </button>
+                                    <button type="button" class="demo-student-chip px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600/30 text-slate-300 hover:text-white border border-slate-700 hover:border-indigo-500/50 text-[11px] font-medium transition" data-id="3" data-name="Rohan Verma" data-roll="ME2026-028" data-dept="Mechanical Engineering" data-year="4th Year" data-photo="/data/student_photos/ME2026-028.jpg">
+                                        🎓 Rohan (ME)
+                                    </button>
+                                </div>
 
                                 <input type="hidden" id="selectedStudentId" required>
 

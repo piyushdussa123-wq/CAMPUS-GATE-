@@ -48,6 +48,13 @@ const scanner = {
         thresholdSlider.addEventListener('input', (e) => {
             thresholdVal.textContent = e.target.value;
         });
+
+        const simBtn = document.getElementById('simulateScanBtn');
+        if (simBtn) {
+            simBtn.addEventListener('click', () => {
+                this.simulateDemoScan();
+            });
+        }
     },
 
     async populateCameraDevices() {
@@ -437,6 +444,68 @@ const scanner = {
         clearTimeout(this.bannerTimeout);
         this.bannerTimeout = setTimeout(() => {
             banner.classList.add('hidden');
+        }, 4000);
+    },
+
+    async simulateDemoScan() {
+        const demoStudents = [
+            { id: 1, name: "Aarav Sharma", roll_number: "CS2026-012", department: "Computer Science & Engineering", photo_path: "CS2026-012.jpg" },
+            { id: 2, name: "Priya Patel", roll_number: "EC2026-045", department: "Electronics & Communication", photo_path: "EC2026-045.jpg" },
+            { id: 3, name: "Rohan Verma", roll_number: "ME2026-028", department: "Mechanical Engineering", photo_path: "ME2026-028.jpg" }
+        ];
+
+        if (!this.demoIdx) this.demoIdx = 0;
+        const student = demoStudents[this.demoIdx % demoStudents.length];
+        this.demoIdx++;
+
+        const placeholder = document.getElementById('cameraPlaceholder');
+        if (placeholder) placeholder.classList.add('hidden');
+
+        this.canvas.width = 640;
+        this.canvas.height = 360;
+        this.clearCanvas();
+
+        const fakeBox = [220, 60, 200, 220];
+        this.renderDetections([{
+            box: fakeBox,
+            is_known: true,
+            student: student,
+            confidence: 0.94,
+            gate_action: { status: 'ALLOWED' }
+        }]);
+
+        soundEngine.playSuccess();
+        const voiceEnabled = document.getElementById('voiceAnnounceCheckbox')?.checked ?? true;
+        if (voiceEnabled) {
+            soundEngine.speak(`Welcome, ${student.name}. Entry recorded for ${student.department}.`);
+        }
+
+        this.showEntryBanner(student, { gate_name: document.getElementById('gateSelector')?.value || 'Main Gate - Gate 1' }, 0.94);
+
+        try {
+            await fetch('/api/entries/manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: student.id,
+                    name: student.name,
+                    roll_number: student.roll_number,
+                    department: student.department,
+                    gate_name: document.getElementById('gateSelector')?.value || 'Main Gate - Gate 1',
+                    status: 'ALLOWED'
+                })
+            });
+            if (typeof loadTodayStats === 'function') loadTodayStats();
+            if (typeof loadAttendanceLogs === 'function') loadAttendanceLogs();
+        } catch (e) {
+            console.warn("Simulate log error:", e);
+        }
+
+        setTimeout(() => {
+            if (!this.isRunning) {
+                this.clearCanvas();
+                if (placeholder) placeholder.classList.remove('hidden');
+            }
         }, 4000);
     }
 };

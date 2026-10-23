@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initForm();
     initRecordsList();
     initTabSwitching();
+    initPrototypeButtons();
 });
 
 // ============================================================================
@@ -165,9 +166,18 @@ function initStudentSearch() {
         }, 200);
     });
 
-    searchInput.addEventListener('focus', () => {
+    searchInput.addEventListener('focus', async () => {
         if (searchInput.value.trim().length > 0) {
             dropdown.classList.remove('hidden');
+        } else {
+            // Show prototype / default demo students on focus
+            try {
+                const res = await fetch('/api/parent-pass/students/search');
+                const data = await res.json();
+                renderStudentSearchResults(data.students || []);
+            } catch (err) {
+                console.warn(err);
+            }
         }
     });
 
@@ -791,4 +801,61 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+}
+
+// Prototype Showcase Quick-Fill & Demo Student Chips
+function initPrototypeButtons() {
+    // 1-Click Demo Pass
+    const autoFillBtn = document.getElementById('autoFillDemoPassBtn');
+    if (autoFillBtn) {
+        autoFillBtn.addEventListener('click', () => {
+            document.getElementById('parentName').value = "Rajesh Sharma";
+            document.getElementById('phoneNumber').value = "9876543210";
+            document.getElementById('relation').value = "Father";
+            document.getElementById('purpose').value = "Meeting Faculty / HOD";
+            document.getElementById('idProofType').value = "Aadhaar Card";
+            document.getElementById('idProofNumber').value = "9876-5432-1098";
+            document.getElementById('vehicleNumber').value = "KA-01-AB-1234";
+
+            // Select prototype student Aarav Sharma
+            selectStudent({
+                id: 1,
+                name: "Aarav Sharma",
+                roll_number: "CS2026-012",
+                department: "Computer Science & Engineering",
+                year: "3rd Year",
+                photo_path: "/data/student_photos/CS2026-012.jpg"
+            });
+
+            // Set current time and date
+            const now = new Date();
+            const dateInput = document.getElementById('visitDate');
+            if (dateInput) dateInput.value = now.toISOString().split('T')[0];
+            const inTimeInput = document.getElementById('inTime');
+            if (inTimeInput) inTimeInput.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            // Clear errors
+            document.querySelectorAll('.form-error-msg').forEach(el => el.classList.add('hidden'));
+
+            // Smooth scroll to generate button and highlight
+            const submitBtn = document.getElementById('submitPassBtn');
+            if (submitBtn) {
+                submitBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    // Demo Student Chips
+    document.querySelectorAll('.demo-student-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            selectStudent({
+                id: parseInt(chip.getAttribute('data-id'), 10),
+                name: chip.getAttribute('data-name'),
+                roll_number: chip.getAttribute('data-roll'),
+                department: chip.getAttribute('data-dept'),
+                year: chip.getAttribute('data-year') || '2nd Year',
+                photo_path: chip.getAttribute('data-photo') || null
+            });
+        });
+    });
 }
