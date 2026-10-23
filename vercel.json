@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "campusgate-ai",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

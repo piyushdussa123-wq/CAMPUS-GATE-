@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Visitor Gate Pass - CampusGate AI (Static Edition)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- QR Code Generator CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Custom Style & Print CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/parent_pass.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar (No Print) -->
+    <header class="no-print bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Left Branding & Back Link -->
+            <div class="flex items-center space-x-3">
+                <a href="index.html" class="p-2 rounded-xl bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center" title="Back to Gate Scanner">
+                    <i class="fa-solid fa-arrow-left text-sm mr-2"></i>
+                    <span class="text-xs font-semibold hidden sm:inline">Gate Scanner</span>
+                </a>
+                <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i class="fa-solid fa-address-card text-white text-base"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-black text-base tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-300">
+                                Parent Visitor Gate Pass
+                            </span>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold">
+                                Security Portal
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-400">CampusGate College Administration & Security</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Controls & Staff Session -->
+            <div class="flex items-center space-x-4">
+                <!-- Clock -->
+                <div class="hidden md:flex items-center space-x-2 text-xs bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-700/50">
+                    <i class="fa-regular fa-clock text-emerald-400"></i>
+                    <span id="headerClock" class="font-mono text-emerald-300 font-semibold">--:--:--</span>
+                </div>
+
+                <!-- Staff Auth Status -->
+                <div id="authStatusContainer" class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs">
+                        <i class="fa-solid fa-user-shield text-indigo-400"></i>
+                        <span id="staffUserBadge" class="font-semibold">Security Officer</span>
+                    </div>
+                    <button id="staffLogoutBtn" title="Logout" class="p-1.5 rounded-lg bg-slate-700/50 hover:bg-red-500/20 hover:text-red-300 text-slate-400 transition text-xs">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub Navigation Tabs (No Print) -->
+    <div class="no-print bg-slate-800/40 border-b border-slate-700/40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-3 py-2.5">
+            <button id="viewTabCreate" class="nav-tab active-tab">
+                <i class="fa-solid fa-plus-circle mr-2"></i>New Parent Gate Pass
+            </button>
+            <button id="viewTabRecords" class="nav-tab text-slate-300">
+                <i class="fa-solid fa-list-check mr-2"></i>Visitor Records
+                <span id="totalRecordsBadge" class="ml-2 px-1.5 py-0.2 rounded-full text-xs bg-slate-700 text-slate-300 font-mono">0</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ================= SECTION 1: CREATE PARENT GATE PASS FORM ================= -->
+        <section id="passFormContainer" class="space-y-6">
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 shadow-xl backdrop-blur">
+                <div class="flex items-center justify-between pb-4 border-b border-slate-700/60 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-user-group text-indigo-400 mr-2.5"></i>
+                            Parent / Guardian Visitor Registration
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Issue an official entry gate permit linked to a registered student</p>
+                    </div>
+                    <span class="text-xs text-slate-400 font-mono hidden sm:inline">All required fields marked with <span class="text-red-400">*</span></span>
+                </div>
+
+                <form id="parentPassForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <!-- LEFT COLUMN: VISITOR DETAILS -->
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
+                                <i class="fa-solid fa-id-badge mr-1.5"></i>Visitor Information
+                            </h3>
+
+                            <!-- Parent Name -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Parent / Visitor Full Name <span class="text-red-400">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                                        <i class="fa-solid fa-user text-xs"></i>
+                                    </div>
+                                    <input type="text" id="parentName" required placeholder="e.g. Ramesh Sharma"
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                </div>
+                                <p id="parentNameError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- Phone Number (10 digits) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Phone Number (10 Digits) <span class="text-red-400">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 font-mono text-xs">
+                                        +91
+                                    </div>
+                                    <input type="tel" id="phoneNumber" maxlength="10" required placeholder="9876543210"
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-11 pr-3 py-2 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                </div>
+                                <p id="phoneError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- Relation to Student -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Relationship to Student <span class="text-red-400">*</span>
+                                </label>
+                                <select id="relation" required
+                                    class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                    <option value="">-- Select Relation --</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Local Guardian">Local Guardian</option>
+                                    <option value="Brother">Brother</option>
+                                    <option value="Sister">Sister</option>
+                                    <option value="Uncle / Relative">Uncle / Relative</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <p id="relationError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- ID Proof Type & Number -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        ID Proof Type <span class="text-red-400">*</span>
+                                    </label>
+                                    <select id="idProofType" required
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                        <option value="Aadhaar Card">Aadhaar Card</option>
+                                        <option value="PAN Card">PAN Card</option>
+                                        <option value="Voter ID">Voter ID</option>
+                                        <option value="Driving License">Driving License</option>
+                                        <option value="Passport">Passport</option>
+                                        <option value="Government ID">Government ID</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <p id="idTypeError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        ID Proof Number <span class="text-red-400">*</span>
+                                    </label>
+                                    <input type="text" id="idProofNumber" required placeholder="e.g. XXXX-XXXX-XXXX"
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white uppercase placeholder-slate-500 font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                    <p id="idNumberError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle Number (Optional) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Vehicle Number <span class="text-slate-500 font-normal">(Optional)</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                                        <i class="fa-solid fa-car text-xs"></i>
+                                    </div>
+                                    <input type="text" id="vehicleNumber" placeholder="e.g. DL-01-AB-1234 (Leave blank if pedestrian)"
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 uppercase font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RIGHT COLUMN: STUDENT SEARCH & VISIT DETAILS -->
+                        <div class="space-y-4">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center">
+                                <i class="fa-solid fa-graduation-cap mr-1.5"></i>Student & Visit Information
+                            </h3>
+
+                            <!-- Student Search & Selection (Read-Only Linking) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Search & Select Student <span class="text-red-400">*</span>
+                                    <span class="text-[10px] text-indigo-400 ml-1 font-normal">(Search by Roll No or Name)</span>
+                                </label>
+
+                                <input type="hidden" id="selectedStudentId" required>
+
+                                <!-- Search Input -->
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                    </div>
+                                    <input type="text" id="studentSearchInput" placeholder="Type roll number (e.g. CS2026-012) or student name..."
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+
+                                    <!-- Dropdown Autocomplete -->
+                                    <div id="studentSearchDropdown" class="student-search-dropdown absolute left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl max-h-48 overflow-y-auto z-20 hidden">
+                                        <div id="studentSearchResults" class="divide-y divide-slate-700/50"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Selected Student Card (Read-Only) -->
+                                <div id="selectedStudentCard" class="hidden mt-2 p-3 rounded-xl bg-slate-900/80 border border-indigo-500/40 flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="cardStudentAvatar" class="w-10 h-10 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center overflow-hidden">
+                                            <i class="fa-solid fa-user-graduate text-indigo-400"></i>
+                                        </div>
+                                        <div>
+                                            <h4 id="cardStudentName" class="text-sm font-bold text-white">--</h4>
+                                            <p class="text-xs text-slate-300">
+                                                Roll No: <span id="cardStudentRoll" class="text-indigo-300 font-mono font-bold">--</span>
+                                            </p>
+                                            <p id="cardStudentDept" class="text-[11px] text-slate-400">--</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" id="clearSelectedStudentBtn" class="text-xs text-slate-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-slate-800 transition" title="Change Student">
+                                        <i class="fa-solid fa-xmark"></i> Change
+                                    </button>
+                                </div>
+                                <p id="studentSelectError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- Purpose of Visit -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Purpose of Visit <span class="text-red-400">*</span>
+                                </label>
+                                <select id="purpose" required
+                                    class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                    <option value="">-- Select Purpose --</option>
+                                    <option value="Meeting Faculty / HOD">Meeting Faculty / HOD</option>
+                                    <option value="Fee Payment / Accounts Clearance">Fee Payment / Accounts Clearance</option>
+                                    <option value="Medical / Health Care Issue">Medical / Health Care Issue</option>
+                                    <option value="Hostel / Campus Visit">Hostel / Campus Visit</option>
+                                    <option value="Document Submission / Verification">Document Submission / Verification</option>
+                                    <option value="Personal Emergency">Personal Emergency</option>
+                                    <option value="Other Official Meeting">Other Official Meeting</option>
+                                </select>
+                                <p id="purposeError" class="form-error-msg text-[11px] text-red-400 mt-1 hidden"></p>
+                            </div>
+
+                            <!-- Date and In-Time -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        Visit Date <span class="text-red-400">*</span>
+                                    </label>
+                                    <input type="date" id="visitDate" required
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                        In-Time <span class="text-red-400">*</span>
+                                    </label>
+                                    <input type="text" id="inTime" required placeholder="HH:MM AM/PM"
+                                        class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                                </div>
+                            </div>
+
+                            <!-- Optional Visitor Photo (Webcam or Upload) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                                    Visitor Photo <span class="text-slate-500 font-normal">(Optional snapshot for gate record)</span>
+                                </label>
+                                <div class="flex items-center space-x-3">
+                                    <button type="button" id="startCamBtn" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded-xl transition flex items-center">
+                                        <i class="fa-solid fa-camera mr-1.5 text-indigo-400"></i>Take Snapshot
+                                    </button>
+                                    <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl border border-slate-700 cursor-pointer transition flex items-center">
+                                        <i class="fa-solid fa-upload mr-1.5 text-slate-400"></i>Upload Photo
+                                        <input type="file" id="photoFileInput" accept="image/*" class="hidden">
+                                    </label>
+                                </div>
+
+                                <!-- Webcam Stream Box -->
+                                <div id="camContainer" class="mt-2 space-y-2 hidden">
+                                    <video id="camVideo" autoplay playsinline muted class="w-48 h-36 object-cover bg-black rounded-xl border border-slate-700"></video>
+                                    <button type="button" id="capturePhotoBtn" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition">
+                                        <i class="fa-solid fa-circle-dot mr-1"></i>Capture
+                                    </button>
+                                </div>
+
+                                <!-- Photo Preview -->
+                                <div id="photoPreviewContainer" class="mt-2 flex items-center space-x-3 hidden">
+                                    <img id="photoPreviewImg" src="" class="w-16 h-16 object-cover rounded-xl border border-indigo-500/50">
+                                    <button type="button" id="retakePhotoBtn" class="text-xs text-slate-400 hover:text-red-400 transition">
+                                        <i class="fa-solid fa-trash mr-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-4 border-t border-slate-700/60 flex items-center justify-end space-x-3">
+                        <button type="reset" class="px-5 py-2.5 rounded-xl bg-slate-700/60 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+                            Reset Form
+                        </button>
+                        <button type="submit" id="submitPassBtn" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 transition flex items-center">
+                            <i class="fa-solid fa-ticket mr-2"></i>Generate Parent Gate Pass
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: PAST VISITOR RECORDS ================= -->
+        <section id="recordsListContainer" class="space-y-4 hidden">
+            <!-- Filter Bar -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex-1 flex flex-col sm:flex-row items-center gap-3">
+                    <!-- Search Input -->
+                    <div class="relative w-full sm:w-80">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <input type="text" id="recordsSearchInput" placeholder="Search parent, roll no, phone, pass #..."
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+
+                    <!-- Date Filter -->
+                    <div class="w-full sm:w-48">
+                        <input type="date" id="recordsDateFilter"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="w-full sm:w-36">
+                        <select id="recordsStatusFilter"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 transition">
+                            <option value="All">All Status</option>
+                            <option value="Active">Active Passes</option>
+                            <option value="Exited">Exited Visitors</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="resetFiltersBtn" class="text-xs text-slate-400 hover:text-white px-3 py-2 rounded-xl bg-slate-700/40 hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i>Reset Filters
+                </button>
+            </div>
+
+            <!-- Table for Desktop -->
+            <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl shadow-xl overflow-hidden hidden md:block">
+                <table class="min-w-full divide-y divide-slate-700/60 text-left">
+                    <thead class="bg-slate-800 text-slate-400 text-[11px] uppercase tracking-wider font-semibold">
+                        <tr>
+                            <th class="px-4 py-3">Pass #</th>
+                            <th class="px-4 py-3">Visitor Name</th>
+                            <th class="px-4 py-3">Student</th>
+                            <th class="px-4 py-3">Purpose</th>
+                            <th class="px-4 py-3">Date & In/Out</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody" class="divide-y divide-slate-700/40"></tbody>
+                </table>
+            </div>
+
+            <!-- Cards for Mobile -->
+            <div id="recordsMobileCards" class="grid grid-cols-1 gap-3 md:hidden"></div>
+
+            <!-- Empty State -->
+            <div id="recordsEmptyState" class="bg-slate-800/40 border border-slate-700/40 rounded-2xl p-12 text-center hidden">
+                <i class="fa-solid fa-id-card text-4xl text-slate-600 mb-3"></i>
+                <h3 class="text-sm font-semibold text-slate-300">No Parent Gate Passes Found</h3>
+                <p class="text-xs text-slate-500 mt-1">Try adjusting your search criteria or issue a new pass.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODAL: GENERATED GATE PASS & A5 PRINT PREVIEW ================= -->
+    <div id="passModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto hidden">
+        <div id="passModalDialog" class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden my-8">
+
+            <!-- Top Action Header (No Print) -->
+            <div class="no-print bg-slate-800 px-5 py-3 border-b border-slate-700 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-ticket text-indigo-400"></i>
+                    <h3 class="text-sm font-bold text-white">Generated Parent Gate Pass</h3>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="modalPrintBtn" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center shadow-lg shadow-indigo-600/30">
+                        <i class="fa-solid fa-print mr-1.5"></i>Print Pass (A5)
+                    </button>
+                    <button id="modalCloseBtn" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body: The Printable Pass Receipt (Pure A5 Print Layout) -->
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
+                <div id="printablePassReceipt">
+                    <!-- Print Header -->
+                    <div class="print-header">
+                        <h1 class="print-college-title">CAMPUSGATE INSTITUTE OF TECHNOLOGY</h1>
+                        <p class="text-[9pt] font-semibold text-center m-0">Accredited Engineering Campus • Security Division</p>
+                        <div class="text-center mt-1">
+                            <span class="print-pass-sub">PARENT / VISITOR GATE PASS</span>
+                        </div>
+                    </div>
+
+                    <!-- Pass Metadata Bar -->
+                    <div class="flex items-center justify-between my-2 pb-2 border-b border-black text-[9pt]">
+                        <div>
+                            <strong>Pass No:</strong>
+                            <span id="passNumberText" class="font-mono font-bold text-[10.5pt] ml-1">PGP-00000000-0000</span>
+                        </div>
+                        <div>
+                            <strong>Status:</strong>
+                            <span id="passStatusBadge" class="ml-1">Active</span>
+                        </div>
+                    </div>
+
+                    <!-- Pass Details Table -->
+                    <table class="print-table">
+                        <tbody>
+                            <tr>
+                                <th>Visitor Name</th>
+                                <td colspan="3">
+                                    <strong id="passParentName">--</strong>
+                                    <span class="ml-2 text-[8.5pt]">(<span id="passRelation">--</span>)</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Contact Phone</th>
+                                <td id="passParentPhone" class="font-mono">--</td>
+                                <th>ID Proof</th>
+                                <td id="passIdProof" class="font-mono text-[8.5pt]">--</td>
+                            </tr>
+                            <tr>
+                                <th>Student Name</th>
+                                <td id="passStudentName" class="font-semibold">--</td>
+                                <th>Student Roll</th>
+                                <td id="passStudentRoll" class="font-mono font-bold">--</td>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <td colspan="3" id="passStudentDept">--</td>
+                            </tr>
+                            <tr>
+                                <th>Purpose of Visit</th>
+                                <td colspan="3" id="passPurpose" class="font-semibold">--</td>
+                            </tr>
+                            <tr>
+                                <th>Visit Date</th>
+                                <td id="passVisitDate">--</td>
+                                <th>In-Time</th>
+                                <td id="passInTime" class="font-mono">--</td>
+                            </tr>
+                            <tr>
+                                <th>Vehicle No</th>
+                                <td id="passVehicle" class="font-mono">--</td>
+                                <th>Out-Time</th>
+                                <td id="passOutTime" class="font-mono">Pending Departure</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- QR Code and Visitor Photo Section -->
+                    <div class="print-qr-container">
+                        <div class="flex items-center space-x-3">
+                            <div id="passQrCode" class="print-qr-code"></div>
+                            <div class="text-[7.5pt] leading-tight">
+                                <strong>SECURITY VERIFICATION QR</strong><br>
+                                Scannable at campus exit gates.<br>
+                                Valid for single-day entry only.<br>
+                                Gate: Main Security Terminal
+                            </div>
+                        </div>
+                        <div id="passVisitorPhotoBox" class="hidden"></div>
+                    </div>
+
+                    <!-- Signatures Section -->
+                    <div class="print-signatures">
+                        <div class="print-sign-box">
+                            Security Officer / Gatekeeper Signature
+                        </div>
+                        <div class="print-sign-box">
+                            Parent / Visitor Signature
+                        </div>
+                    </div>
+
+                    <!-- Footer Terms -->
+                    <div class="print-footer-terms">
+                        This pass must be retained by the visitor during campus stay and surrendered to gate security upon exit.
+                        Unauthorized access beyond designated administrative areas is strictly prohibited.
+                    </div>
+                </div>
+
+                <!-- Modal Actions Bar (No Print) -->
+                <div class="no-print mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                    <button id="modalMarkExitBtn" class="px-4 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i>Mark Visitor Exit
+                    </button>
+                    <span class="text-[11px] text-slate-400">Click Print to print or save as A5 PDF</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================= MODAL: STAFF / ADMIN AUTHENTICATION LOCK ================= -->
+    <div id="authModal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full shadow-2xl p-6 relative">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center mx-auto mb-3 text-indigo-400 text-2xl shadow-lg shadow-indigo-500/20">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">Security & Staff Authentication</h3>
+                <p class="text-xs text-slate-400 mt-1">Please log in to issue or manage Parent Visitor Gate Passes</p>
+            </div>
+
+            <div id="loginErrorBox" class="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs hidden"></div>
+
+            <form id="staffLoginForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Staff / Admin Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-user-shield text-xs"></i>
+                        </div>
+                        <input type="text" id="loginUsername" required value="admin"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password / Security PIN</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                            <i class="fa-solid fa-key text-xs"></i>
+                        </div>
+                        <input type="password" id="loginPassword" required value="admin123"
+                            class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1">Default staff accounts: <span class="text-indigo-300 font-mono">admin</span> / <span class="text-indigo-300 font-mono">admin123</span> or <span class="text-indigo-300 font-mono">staff</span> / <span class="text-indigo-300 font-mono">gatepass</span></p>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition flex items-center justify-center">
+                        <i class="fa-solid fa-right-to-bracket mr-2"></i>Sign In to Gate Security Portal
+                    </button>
+                </div>
+
+                <div class="text-center pt-2">
+                    <a href="index.html" class="text-xs text-slate-400 hover:text-slate-200 transition">
+                        ← Return to Campus Gate Scanner
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Controller -->
+    <script src="js/parent_pass.js"></script>
+</body>
+</html>
